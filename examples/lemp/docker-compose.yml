@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  reverseproxy:
+     image: nginx
+     volumes:
+         - "./rev.conf:/etc/nginx/conf.d/default.conf"
+     ports:
+         - "8080:80" 
+     depends_on:
+        - webserver
+
+  webserver:
+     image: nginx
+     volumes:
+         - "./www:/var/www"
+         - "./http.conf:/etc/nginx/conf.d/default.conf"
+     deploy:
+         replicas: 3
+     depends_on:
+        - php
+
+  php:
+     build: ./php-mysqli
+     volumes:
+         - "./www:/var/www"
+     deploy:
+         replicas: 3
+
+  db:
+    image: mysql:5.7
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+    volumes:
+      - ./db-data-dir:/var/lib/mysql
